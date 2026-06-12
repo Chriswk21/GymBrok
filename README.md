@@ -1,17 +1,37 @@
-# gymbrok
+# GymBrok - Offline Gym Tracker
 
-A new Flutter project.
+GymBrok is a modern, offline-first gym tracking application built using Flutter. It features a premium dark theme with vibrant neon green accents. All workout data is persisted locally using Hive.
 
-## Getting Started
+## Key Features
 
-This project is a starting point for a Flutter application.
+- **Exercise Library**: Seeded with 60+ common exercises. Customize or star favorites.
+- **Unilateral Tracking**: Optional split columns for Left & Right side weight tracking.
+- **Workout Templates**: Create templates or save active sessions to repeat routines easily.
+- **Multi-Select Exercises**: Add multiple exercises to templates or active sessions at once.
+- **Calorie Tracker**: Log daily calories and set progression targets on the dashboard.
+- **Body Weight Tracker**: Track body weight log entries over time.
+- **JSON Backup/Restore**: Export your entire app state to JSON or import it to restore your data.
+- **Barbell Plate Calculator**: Automatically calculate plate configurations for any target weight.
 
-A few resources to get you started if this is your first Flutter project:
+## How to Run
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. **Prerequisites**: Ensure you have [Flutter SDK](https://docs.flutter.dev/get-started/install) installed on your machine.
+2. **Clone & Setup**:
+   ```bash
+   git clone https://github.com/Chriswk21/GymBrok.git
+   cd GymBrok
+   flutter pub get
+   ```
+3. **Run the App**:
+   ```bash
+   flutter run
+   ```
+4. **Run Tests**:
+   ```bash
+   flutter test
+   ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Release APK
+
+The compiled release APK is located at:
+- **Path**: `build/app/outputs/flutter-apk/app-release.apk`
