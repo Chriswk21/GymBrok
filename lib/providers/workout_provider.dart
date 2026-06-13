@@ -16,6 +16,7 @@ class WorkoutProvider extends ChangeNotifier {
   late Box _templatesBox;
   late Box _weightBox;
   late Box _caloriesBox;
+  late Box _activeSessionBox;
   
   List<WorkoutSession> _history = [];
   List<WorkoutTemplate> _templates = [];
@@ -50,14 +51,53 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    _workoutsBox = await Hive.openBox('workouts_box');
-    _templatesBox = await Hive.openBox('templates_box');
-    _weightBox = await Hive.openBox('weight_box');
-    _caloriesBox = await Hive.openBox('calories_box');
-    _loadHistory();
-    _loadTemplates();
-    _loadWeightHistory();
-    _loadCalorieData();
+    try {
+      _workoutsBox = await Hive.openBox('workouts_box');
+      _loadHistory();
+    } catch (e, stack) {
+      if (kDebugMode) {
+        print('Error loading workouts history: $e\n$stack');
+      }
+    }
+
+    try {
+      _templatesBox = await Hive.openBox('templates_box');
+      _loadTemplates();
+    } catch (e, stack) {
+      if (kDebugMode) {
+        print('Error loading templates: $e\n$stack');
+      }
+    }
+
+    try {
+      _weightBox = await Hive.openBox('weight_box');
+      _loadWeightHistory();
+    } catch (e, stack) {
+      if (kDebugMode) {
+        print('Error loading weight history: $e\n$stack');
+      }
+    }
+
+    try {
+      _caloriesBox = await Hive.openBox('calories_box');
+      _loadCalorieData();
+    } catch (e, stack) {
+      if (kDebugMode) {
+        print('Error loading calorie data: $e\n$stack');
+      }
+    }
+
+    try {
+      _activeSessionBox = await Hive.openBox('active_session_box');
+      _loadActiveSession();
+    } catch (e, stack) {
+      if (kDebugMode) {
+        print('Error loading active session: $e\n$stack');
+      }
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   void _loadHistory() {
@@ -66,7 +106,6 @@ class WorkoutProvider extends ChangeNotifier {
         .toList();
     // Sort history by date descending
     _history.sort((a, b) => b.date.compareTo(a.date));
-    _isLoading = false;
     notifyListeners();
   }
 
@@ -95,6 +134,27 @@ class WorkoutProvider extends ChangeNotifier {
       }
     }
     notifyListeners();
+  }
+
+  void _loadActiveSession() {
+    final raw = _activeSessionBox.get('active_session');
+    if (raw != null) {
+      try {
+        _activeSession = WorkoutSession.fromJson(Map<String, dynamic>.from(raw as Map));
+      } catch (e, stack) {
+        if (kDebugMode) {
+          print('Error loading active session details: $e\n$stack');
+        }
+      }
+    }
+  }
+
+  Future<void> _saveActiveSessionToDisk() async {
+    if (_activeSession != null) {
+      await _activeSessionBox.put('active_session', _activeSession!.toJson());
+    } else {
+      await _activeSessionBox.delete('active_session');
+    }
   }
 
   // Weight Log Management
@@ -171,6 +231,8 @@ class WorkoutProvider extends ChangeNotifier {
       await _templatesBox.clear();
       await _weightBox.clear();
       await _caloriesBox.clear();
+      await _activeSessionBox.clear();
+      _activeSession = null;
       
       final exercisesBox = Hive.box('exercises_box');
       await exercisesBox.clear();
@@ -258,6 +320,7 @@ class WorkoutProvider extends ChangeNotifier {
       date: DateTime.now(),
       exerciseLogs: [],
     );
+    _saveActiveSessionToDisk();
     notifyListeners();
   }
 
@@ -308,6 +371,7 @@ class WorkoutProvider extends ChangeNotifier {
       date: DateTime.now(),
       exerciseLogs: logs,
     );
+    _saveActiveSessionToDisk();
     notifyListeners();
   }
 
@@ -400,6 +464,7 @@ class WorkoutProvider extends ChangeNotifier {
 
     final updatedLogs = List<ExerciseLog>.from(_activeSession!.exerciseLogs)..add(newLog);
     _activeSession = _activeSession!.copyWith(exerciseLogs: updatedLogs);
+    _saveActiveSessionToDisk();
     notifyListeners();
   }
 
@@ -409,6 +474,7 @@ class WorkoutProvider extends ChangeNotifier {
 
     final updatedLogs = _activeSession!.exerciseLogs.where((log) => log.exerciseId != exerciseId).toList();
     _activeSession = _activeSession!.copyWith(exerciseLogs: updatedLogs);
+    _saveActiveSessionToDisk();
     notifyListeners();
   }
 
@@ -447,6 +513,7 @@ class WorkoutProvider extends ChangeNotifier {
     updatedLogs[logIndex] = exerciseLog.copyWith(sets: updatedSets);
     
     _activeSession = _activeSession!.copyWith(exerciseLogs: updatedLogs);
+    _saveActiveSessionToDisk();
     notifyListeners();
   }
 
@@ -466,6 +533,7 @@ class WorkoutProvider extends ChangeNotifier {
     updatedLogs[logIndex] = exerciseLog.copyWith(sets: updatedSets);
     
     _activeSession = _activeSession!.copyWith(exerciseLogs: updatedLogs);
+    _saveActiveSessionToDisk();
     notifyListeners();
   }
 
@@ -511,6 +579,7 @@ class WorkoutProvider extends ChangeNotifier {
       _startRestTimer(exerciseLog.exerciseName);
     }
 
+    _saveActiveSessionToDisk();
     notifyListeners();
   }
 
@@ -535,13 +604,15 @@ class WorkoutProvider extends ChangeNotifier {
     }
 
     _activeSession = null;
+    await _saveActiveSessionToDisk();
     _stopRestTimer();
     notifyListeners();
   }
 
   // Cancel and discard active workout session
-  void cancelActiveWorkout() {
+  void cancelActiveWorkout() async {
     _activeSession = null;
+    await _saveActiveSessionToDisk();
     _stopRestTimer();
     notifyListeners();
   }

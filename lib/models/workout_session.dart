@@ -46,7 +46,7 @@ class WorkoutSession {
       id: json['id'] as String,
       date: DateTime.parse(json['date'] as String),
       exerciseLogs: (json['exerciseLogs'] as List<dynamic>)
-          .map((log) => ExerciseLog.fromJson(log as Map<String, dynamic>))
+          .map((log) => ExerciseLog.fromJson(Map<String, dynamic>.from(log as Map)))
           .toList(),
     );
   }

@@ -76,7 +76,9 @@ void main() {
 
 
     // Tap to open the workout screen modal sheet
-    await tester.tap(find.text('Open Workout'));
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Open Workout'));
+    });
     await tester.pumpAndSettle();
 
     // Verify ActiveWorkoutScreen is open
@@ -108,7 +110,9 @@ void main() {
     expect(applyBtn, findsOneWidget);
 
     // Tap the Apply button
-    await tester.tap(applyBtn);
+    await tester.runAsync(() async {
+      await tester.tap(applyBtn);
+    });
     await tester.pumpAndSettle();
 
     // The sheet should close, and the exercises should be added to the active workout session

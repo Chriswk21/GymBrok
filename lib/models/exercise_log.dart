@@ -65,7 +65,7 @@ class ExerciseLog {
       exerciseName: json['exerciseName'] as String,
       category: json['category'] as String,
       sets: (json['sets'] as List<dynamic>)
-          .map((s) => WorkoutSet.fromJson(s as Map<String, dynamic>))
+          .map((s) => WorkoutSet.fromJson(Map<String, dynamic>.from(s as Map)))
           .toList(),
     );
   }
