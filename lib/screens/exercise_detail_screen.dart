@@ -34,10 +34,14 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     );
 
     final history = workoutProvider.getExerciseHistory(exercise.id);
+    final isCalisthenics = exercise.category == 'Calisthenics';
 
     // Calculate all-time PRs
     double allTimeMaxWeight = 0.0;
     double allTimeBest1RM = 0.0;
+    int allTimeMaxReps = 0;
+    int totalCompletedSets = 0;
+    int totalCompletedReps = 0;
 
     for (var entry in history) {
       final log = entry.value;
@@ -47,7 +51,17 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       if (log.estimatedOneRepMax > allTimeBest1RM) {
         allTimeBest1RM = log.estimatedOneRepMax;
       }
+      if (log.maxReps > allTimeMaxReps) {
+        allTimeMaxReps = log.maxReps;
+      }
+      for (var s in log.sets) {
+        if (s.isDone) {
+          totalCompletedReps += s.reps;
+          totalCompletedSets++;
+        }
+      }
     }
+    double avgReps = totalCompletedSets > 0 ? totalCompletedReps / totalCompletedSets : 0.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -115,8 +129,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
               children: [
                 Expanded(
                   child: _buildPRCard(
-                    'Max weight PR',
-                    '${allTimeMaxWeight.toStringAsFixed(1)} kg',
+                    isCalisthenics ? 'Max Reps PR' : 'Max weight PR',
+                    isCalisthenics ? '$allTimeMaxReps reps' : '${allTimeMaxWeight.toStringAsFixed(1)} kg',
                     Icons.emoji_events_outlined,
                     AppTheme.primary,
                   ),
@@ -124,8 +138,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildPRCard(
-                    'Best Est. 1RM',
-                    '${allTimeBest1RM.toStringAsFixed(1)} kg',
+                    isCalisthenics ? 'Avg Reps / Set' : 'Best Est. 1RM',
+                    isCalisthenics ? '${avgReps.toStringAsFixed(1)} reps' : '${allTimeBest1RM.toStringAsFixed(1)} kg',
                     Icons.fitness_center_outlined,
                     AppTheme.secondary,
                   ),
@@ -147,31 +161,44 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                   ),
                 ),
                 // Toggle switch between Max Weight and 1RM
-                Row(
-                  children: [
-                    Text(
-                      _showOneRepMax ? 'Estimated 1RM' : 'Max Weight',
+                if (isCalisthenics)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Max Reps',
                       style: TextStyle(
-                        color: _showOneRepMax ? AppTheme.secondary : AppTheme.primary,
+                        color: AppTheme.primary,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Switch.adaptive(
-                      value: _showOneRepMax,
-                      activeThumbColor: AppTheme.secondary,
-                      activeTrackColor: AppTheme.secondary.withAlpha(100),
-                      inactiveThumbColor: AppTheme.primary,
-                      inactiveTrackColor: AppTheme.primary.withAlpha(100),
-                      onChanged: (val) {
-                        setState(() {
-                          _showOneRepMax = val;
-                        });
-                      },
-                    ),
-                  ],
-                ),
+                  )
+                else
+                  Row(
+                    children: [
+                      Text(
+                        _showOneRepMax ? 'Estimated 1RM' : 'Max Weight',
+                        style: TextStyle(
+                          color: _showOneRepMax ? AppTheme.secondary : AppTheme.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Switch.adaptive(
+                        value: _showOneRepMax,
+                        activeThumbColor: AppTheme.secondary,
+                        activeTrackColor: AppTheme.secondary.withAlpha(100),
+                        inactiveThumbColor: AppTheme.primary,
+                        inactiveTrackColor: AppTheme.primary.withAlpha(100),
+                        onChanged: (val) {
+                          setState(() {
+                            _showOneRepMax = val;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
               ],
             ),
             const SizedBox(height: 12),
@@ -180,6 +207,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
             ExerciseChart(
               history: history,
               showOneRepMax: _showOneRepMax,
+              isCalisthenics: isCalisthenics,
             ),
             const SizedBox(height: 24),
 

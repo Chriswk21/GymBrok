@@ -219,6 +219,7 @@ class _AddExerciseBottomSheetState extends State<_AddExerciseBottomSheet> {
     'Bicep',
     'Tricep',
     'Core',
+    'Calisthenics',
   ];
 
   @override

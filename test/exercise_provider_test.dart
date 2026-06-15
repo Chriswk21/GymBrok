@@ -63,5 +63,17 @@ void main() {
     // Verify it is in list
     expect(provider.exercises.length, initialLength + 2);
     expect(provider.exercises.any((e) => e.id == ex2.id), true);
+
+    // Verify Calisthenics exercises are seeded correctly
+    final calisthenicsExercises = provider.exercises.where((e) => e.category == 'Calisthenics').toList();
+    expect(calisthenicsExercises, isNotEmpty);
+
+    final pullUps = calisthenicsExercises.firstWhere((e) => e.name == 'Pull Ups');
+    expect(pullUps.category, 'Calisthenics');
+    expect(pullUps.hasUnilateralWeights, false);
+
+    final pistolSquats = calisthenicsExercises.firstWhere((e) => e.name == 'Pistol Squats');
+    expect(pistolSquats.category, 'Calisthenics');
+    expect(pistolSquats.hasUnilateralWeights, true);
   });
 }

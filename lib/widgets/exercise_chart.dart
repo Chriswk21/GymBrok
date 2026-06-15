@@ -7,11 +7,13 @@ import '../theme/app_theme.dart';
 class ExerciseChart extends StatefulWidget {
   final List<MapEntry<DateTime, ExerciseLog>> history;
   final bool showOneRepMax;
+  final bool isCalisthenics;
 
   const ExerciseChart({
     super.key,
     required this.history,
     required this.showOneRepMax,
+    this.isCalisthenics = false,
   });
 
   @override
@@ -46,7 +48,9 @@ class _ExerciseChartState extends State<ExerciseChart> {
 
     for (int i = 0; i < widget.history.length; i++) {
       final log = widget.history[i].value;
-      final val = widget.showOneRepMax ? log.estimatedOneRepMax : log.maxWeight;
+      final val = widget.isCalisthenics
+          ? log.maxReps.toDouble()
+          : (widget.showOneRepMax ? log.estimatedOneRepMax : log.maxWeight);
       spots.add(FlSpot(i.toDouble(), val));
 
       if (val < minY) minY = val;
@@ -99,7 +103,9 @@ class _ExerciseChartState extends State<ExerciseChart> {
     }
 
     final chartData = _prepareData();
-    final accentColor = widget.showOneRepMax ? AppTheme.secondary : AppTheme.primary;
+    final accentColor = widget.isCalisthenics
+        ? AppTheme.primary
+        : (widget.showOneRepMax ? AppTheme.secondary : AppTheme.primary);
 
     return Container(
       height: 240,
@@ -157,12 +163,13 @@ class _ExerciseChartState extends State<ExerciseChart> {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 40,
+                reservedSize: 45,
                 getTitlesWidget: (value, meta) {
+                  final label = widget.isCalisthenics ? '${value.toInt()} r' : '${value.toInt()}kg';
                   return SideTitleWidget(
                     axisSide: meta.axisSide,
                     child: Text(
-                      '${value.toInt()}kg',
+                      label,
                       style: const TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 10,
@@ -190,8 +197,11 @@ class _ExerciseChartState extends State<ExerciseChart> {
                   final index = spot.x.toInt();
                   final date = widget.history[index].key;
                   final dateStr = DateFormat('MMM dd, yyyy').format(date);
+                  final valueStr = widget.isCalisthenics
+                      ? '${spot.y.toInt()} reps'
+                      : '${spot.y.toStringAsFixed(1)} kg';
                   return LineTooltipItem(
-                    '$dateStr\n${spot.y.toStringAsFixed(1)} kg',
+                    '$dateStr\n$valueStr',
                     const TextStyle(
                       color: Colors.white,
                       fontSize: 12,

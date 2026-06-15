@@ -25,6 +25,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
     'Bicep',
     'Tricep',
     'Core',
+    'Calisthenics',
   ];
 
   @override

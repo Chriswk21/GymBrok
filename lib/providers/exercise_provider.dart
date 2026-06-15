@@ -178,6 +178,41 @@ class ExerciseProvider extends ChangeNotifier {
         'category': 'Shoulders',
         'hasUnilateralWeights': true,
       },
+      {
+        'name': 'Chin Ups',
+        'category': 'Calisthenics',
+        'hasUnilateralWeights': false,
+      },
+      {
+        'name': 'Push Ups (Bodyweight)',
+        'category': 'Calisthenics',
+        'hasUnilateralWeights': false,
+      },
+      {
+        'name': 'Dips (Bodyweight)',
+        'category': 'Calisthenics',
+        'hasUnilateralWeights': false,
+      },
+      {
+        'name': 'Muscle Ups',
+        'category': 'Calisthenics',
+        'hasUnilateralWeights': false,
+      },
+      {
+        'name': 'Handstand Push Ups',
+        'category': 'Calisthenics',
+        'hasUnilateralWeights': false,
+      },
+      {
+        'name': 'Pistol Squats',
+        'category': 'Calisthenics',
+        'hasUnilateralWeights': true,
+      },
+      {
+        'name': 'L-Sit',
+        'category': 'Calisthenics',
+        'hasUnilateralWeights': false,
+      },
     ];
 
     for (var raw in newExercisesToSeed) {
@@ -195,6 +230,28 @@ class ExerciseProvider extends ChangeNotifier {
         );
         await _exercisesBox.put(id, exercise.toJson());
         _exercises.add(exercise);
+        updated = true;
+      }
+    }
+
+    // 3. Move existing calisthenics exercises to 'Calisthenics' category
+    final calisthenicsToMigrate = [
+      'Pull Ups',
+      'Chest Dips',
+      'Weighted Push Ups',
+      'Plank',
+      'Side Plank',
+      'Hanging Leg Raise',
+      'Hanging Knee Raise',
+      'Toes to Bar'
+    ];
+
+    for (int i = 0; i < _exercises.length; i++) {
+      final exercise = _exercises[i];
+      if (calisthenicsToMigrate.contains(exercise.name) && exercise.category != 'Calisthenics') {
+        final updatedExercise = exercise.copyWith(category: 'Calisthenics');
+        await _exercisesBox.put(exercise.id, updatedExercise.toJson());
+        _exercises[i] = updatedExercise;
         updated = true;
       }
     }
@@ -237,9 +294,7 @@ class ExerciseProvider extends ChangeNotifier {
         'Machine Chest Press',
         'Incline Machine Chest Press',
         'Cable Fly',
-        'Pec Deck',
-        'Weighted Push Ups',
-        'Chest Dips'
+        'Pec Deck'
       ],
       'Back': [
         'Deadlift',
@@ -248,7 +303,6 @@ class ExerciseProvider extends ChangeNotifier {
         'Lat Pulldown',
         'Seated Cable Row',
         'T-Bar Row',
-        'Pull Ups',
         'Face Pulls',
         'Hyperextensions',
         'Lat Pulldown Machine (Unilateral)',
@@ -295,18 +349,30 @@ class ExerciseProvider extends ChangeNotifier {
       ],
       'Core': [
         'Weighted Plank',
-        'Hanging Leg Raise',
         'Cable Crunch',
         'Ab Wheel Rollout',
         'Rotary Torso Machine',
         'Ab Crunch Machine',
         'Cable Woodchop',
         'Weighted Decline Crunch',
-        'Russian Twist (Weighted)',
-        'Hanging Knee Raise',
-        'Toes to Bar',
+        'Russian Twist (Weighted)'
+      ],
+      'Calisthenics': [
+        'Pull Ups',
+        'Chin Ups',
+        'Push Ups (Bodyweight)',
+        'Weighted Push Ups',
+        'Dips (Bodyweight)',
+        'Chest Dips',
+        'Muscle Ups',
+        'Handstand Push Ups',
+        'Pistol Squats',
+        'L-Sit',
         'Plank',
-        'Side Plank'
+        'Side Plank',
+        'Hanging Leg Raise',
+        'Hanging Knee Raise',
+        'Toes to Bar'
       ]
     };
 
@@ -322,6 +388,7 @@ class ExerciseProvider extends ChangeNotifier {
             name == 'Rotary Torso Machine' ||
             name == 'Cable Woodchop' ||
             name == 'Side Plank' ||
+            name == 'Pistol Squats' ||
             name == 'Cable Lateral Raise (Unilateral)';
         
         final exercise = Exercise(
