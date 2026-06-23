@@ -281,7 +281,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                         const SizedBox(height: 8),
                         ...List.generate(log.sets.length, (setIdx) {
                           final set = log.sets[setIdx];
-                          final est1RM = set.weight * (1 + (set.reps / 30.0));
+                          final est1RM = set.reps == 1 ? set.weight : set.weight * (1 + (set.reps / 30.0));
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
@@ -303,13 +303,14 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                                     fontSize: 13,
                                   ),
                                 ),
-                                Text(
-                                  'Est. 1RM: ${est1RM.toStringAsFixed(1)} kg',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 11,
+                                if (!isCalisthenics)
+                                  Text(
+                                    'Est. 1RM: ${est1RM.toStringAsFixed(1)} kg',
+                                    style: const TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 11,
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           );

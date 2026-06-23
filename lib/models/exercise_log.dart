@@ -48,12 +48,12 @@ class ExerciseLog {
     return completedSets.map((s) => s.reps).reduce((a, b) => a > b ? a : b);
   }
 
-  // Find the maximum estimated 1RM from completed sets using Epley formula: 1RM = Weight * (1 + (Reps / 30))
+  // Find the maximum estimated 1RM from completed sets using Epley formula: 1RM = Weight * (1 + (Reps / 30)). If reps = 1, returns the exact weight.
   double get estimatedOneRepMax {
     final completedSets = sets.where((set) => set.isDone && set.reps > 0);
     if (completedSets.isEmpty) return 0.0;
     return completedSets
-        .map((s) => s.weight * (1 + (s.reps / 30.0)))
+        .map((s) => s.reps == 1 ? s.weight : s.weight * (1 + (s.reps / 30.0)))
         .reduce((a, b) => a > b ? a : b);
   }
 

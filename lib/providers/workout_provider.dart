@@ -624,6 +624,16 @@ class WorkoutProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Update an existing completed workout session in history
+  Future<void> updateWorkoutInHistory(WorkoutSession updatedSession) async {
+    await _workoutsBox.put(updatedSession.id, updatedSession.toJson());
+    final index = _history.indexWhere((s) => s.id == updatedSession.id);
+    if (index != -1) {
+      _history[index] = updatedSession;
+      notifyListeners();
+    }
+  }
+
   // Timer Management
   void _startRestTimer(String exerciseName) {
     _restTimer?.cancel();

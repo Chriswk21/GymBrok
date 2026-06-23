@@ -161,4 +161,58 @@ void main() {
     expect(provider.calorieTarget, 2500.0);
     expect(provider.todayCalories, 2000.0);
   });
+
+  test('WorkoutProvider 1RM logic and history editing test', () async {
+    final provider = WorkoutProvider();
+    while (provider.isLoading) {
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+
+    // 1. Start empty workout
+    provider.startWorkout();
+    final benchPress = Exercise(
+      id: 'bench_press_id',
+      name: 'Barbell Bench Press',
+      category: 'Chest',
+    );
+    provider.addExerciseToActiveWorkout(benchPress);
+
+    // 2. Set weight to 95 kg and reps to 1
+    provider.updateSet(
+      'bench_press_id',
+      0,
+      weight: 95.0,
+      reps: 1,
+      isDone: true,
+    );
+
+    await provider.finishActiveWorkout();
+    expect(provider.history, hasLength(1));
+
+    // Verify 1RM logic (should be exactly 95.0 kg when reps = 1)
+    final session = provider.history.first;
+    expect(session.exerciseLogs.first.estimatedOneRepMax, 95.0);
+
+    // 3. Edit workout in history
+    final updatedSession = session.copyWith(
+      exerciseLogs: [
+        session.exerciseLogs.first.copyWith(
+          sets: [
+            session.exerciseLogs.first.sets.first.copyWith(
+              weight: 100.0,
+              reps: 2,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await provider.updateWorkoutInHistory(updatedSession);
+    expect(provider.history, hasLength(1));
+    expect(provider.history.first.exerciseLogs.first.sets.first.weight, 100.0);
+    expect(provider.history.first.exerciseLogs.first.sets.first.reps, 2);
+
+    // Verify 1RM logic for reps > 1 (should be Epley: 100 * (1 + 2/30) = 106.67)
+    expect(provider.history.first.exerciseLogs.first.estimatedOneRepMax, closeTo(106.67, 0.05));
+  });
 }
